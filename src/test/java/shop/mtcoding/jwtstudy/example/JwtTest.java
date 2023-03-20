@@ -9,6 +9,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.classmate.AnnotationOverrides.StdImpl;
 
 //Json Web Token  : 대칭키 사용
 public class JwtTest {
@@ -70,4 +71,9 @@ public class JwtTest {
         // then
     }
 
+    @Test
+    public void env_test() {
+        String myVar = System.getenv("JAVA_HOME");
+        System.out.println(myVar);
+    }
 }
