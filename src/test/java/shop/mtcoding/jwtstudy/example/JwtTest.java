@@ -6,6 +6,9 @@ import org.junit.jupiter.api.Test;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.SignatureVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 
 //Json Web Token  : 대칭키 사용
 public class JwtTest {
@@ -33,8 +36,38 @@ public class JwtTest {
                 .sign(Algorithm.HMAC512("메타코딩"));
         // 암호화 소금 치기... 이건 절대 노출 되면 안됨
         System.out.println(jwt);
+        // jwt 는 jwt.io로 다 복호화 된다.
 
-        System.out.println(JWT.decode(jwt));
         // then
     }
+
+    @Test
+    public void verifyJwt_test() {
+        // given
+
+        // when
+        String jwt = JWT.create()
+                .withSubject("토큰제목")
+                .withExpiresAt(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7)) // 토큰만료 시간
+                .withClaim("id", 1) // 값이 들어가는 것
+                .withClaim("role", "guest")
+                .sign(Algorithm.HMAC512("메타코딩"));
+
+        try {
+            DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC512("메타코딩")).build().verify(jwt);
+
+            int id = decodedJWT.getClaim("id").asInt();
+            String role = decodedJWT.getClaim("role").asString();
+            // 한 번 검증되면 세션에 넣어서 interceptor로 관리하자.
+
+            System.out.println("디버그 : " + id);
+            System.out.println("디버그 : " + role);
+        } catch (SignatureVerificationException sve) {
+            System.out.println("검증 실패 , 토큰 틀림 " + sve); // 위조
+        } catch (TokenExpiredException tee) {
+            System.out.println("토큰 시간 만료" + tee); // 오래됨. -> 갱신하지말고 다시 로그인하자.
+        }
+        // then
+    }
+
 }
